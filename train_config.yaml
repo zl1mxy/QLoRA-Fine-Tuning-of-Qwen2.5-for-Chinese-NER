@@ -1,0 +1,50 @@
+# Qwen2.5-7B + QLoRA 微调配置
+model:
+  name: "Qwen/Qwen2.5-7B-Instruct"
+  quant_config:
+    load_in_4bit: true
+    bnb_4bit_quant_type: "nf4"
+    bnb_4bit_compute_dtype: "float16"
+    bnb_4bit_use_double_quant: true
+
+lora:
+  r: 16
+  lora_alpha: 32
+  target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  lora_dropout: 0.1
+  bias: "none"
+
+training:
+  output_dir: "./qwen2.5-7b-ner-qlora"
+  num_train_epochs: 3
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+  learning_rate: 2e-4
+  warmup_steps: 100
+  logging_steps: 50
+  eval_steps: 200
+  save_steps: 500
+  save_total_limit: 3
+  fp16: true
+  optim: "paged_adamw_8bit"
+  max_grad_norm: 0.3
+  weight_decay: 0.001
+  lr_scheduler_type: "cosine"
+  gradient_checkpointing: true
+
+data:
+  train_path: "ner_instruction_dataset/train"
+  valid_path: "ner_instruction_dataset/validation"
+  max_seq_length: 512
+
+hardware:
+  required_gpu_memory: "12GB+"
+  recommended_gpu: "RTX 3090/4090 or A100"
